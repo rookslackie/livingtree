@@ -6,4 +6,4 @@ This is a staging home. It transfers to Anthony's own GitHub account whenever he
 
 The source arrives from the box through a write deploy key that works only for this repository, so no personal token sits on the box.
 
-**License:** Anthony's choice, pending. Until he picks one, no license is granted here.
+**License:** MIT (see LICENSE), chosen by Hunter on 2026-10-06. A gift, no subscription owed. Anthony can change the license on his own future work once the repo is his.
