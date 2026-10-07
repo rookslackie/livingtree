@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LivingTree — Anthony's Hum Home</title>
+<style>
+:root{--night:#0a140e;--bark:#3a2b1c;--amber:#ffb85c;--leaf:#7fbf6a;--gold:#e8b04b;--mist:#cfe3d0;--card:#101d15}
+*{box-sizing:border-box;margin:0}
+body{background:radial-gradient(1200px 600px at 50% -10%,#16281b 0%,var(--night) 60%);color:var(--mist);
+font-family:Georgia,'Times New Roman',serif;min-height:100vh}
+header{text-align:center;padding:26px 16px 8px}
+h1{font-size:2rem;color:var(--amber);letter-spacing:.04em;font-weight:normal}
+.sub{font-style:italic;opacity:.75;margin-top:6px;font-size:.95rem}
+nav{display:flex;justify-content:center;gap:4px;flex-wrap:wrap;padding:14px}
+nav button{background:transparent;color:var(--mist);border:1px solid #2c4231;border-radius:18px;
+padding:8px 16px;cursor:pointer;font-family:inherit;font-size:.95rem;transition:.2s}
+nav button.on,nav button:hover{color:var(--night);background:var(--amber);border-color:var(--amber)}
+main{max-width:880px;margin:0 auto;padding:0 16px 60px}
+section{display:none}section.on{display:block;animation:fade .35s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.card{background:var(--card);border:1px solid #22392a;border-radius:14px;padding:18px;margin:14px 0}
+h2{color:var(--gold);font-weight:normal;margin-bottom:8px;font-size:1.25rem}
+p.note{font-size:.95rem;line-height:1.6;opacity:.9}
+input,textarea{width:100%;background:#0d1a12;border:1px solid #2c4231;border-radius:8px;color:var(--mist);
+padding:9px;font-family:inherit;font-size:.95rem;margin:6px 0}
+textarea{min-height:70px;resize:vertical}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row input{flex:1;min-width:160px}
+button.send{background:var(--amber);color:var(--night);border:none;border-radius:8px;padding:9px 20px;
+cursor:pointer;font-family:inherit;font-weight:bold;margin-top:4px}
+button.send:disabled{opacity:.5;cursor:wait}
+.msg{font-size:.85rem;min-height:1.2em;margin:4px 0;color:var(--leaf)}
+.msg.err{color:#e88}
+/* tree */
+#treeWrap{position:relative;background:linear-gradient(180deg,#0c1a11 0%,#0a140e 70%);border-radius:14px;
+border:1px solid #22392a;overflow:hidden;margin:14px 0;min-height:430px}
+#treeSvg{display:block;width:100%;height:460px}
+.leaf{cursor:pointer;transition:.2s}
+.leaf:hover{filter:brightness(1.5)}
+@keyframes sway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+.sway{transform-origin:center bottom;animation:sway 6s ease-in-out infinite}
+#leafTip{position:absolute;pointer-events:none;background:#1a2a1c;border:1px solid var(--gold);border-radius:10px;
+padding:10px 12px;max-width:260px;font-size:.85rem;display:none;z-index:5;line-height:1.5}
+#leafTip b{color:var(--amber);display:block;margin-bottom:2px}
+/* shelf */
+.song{display:grid;grid-template-columns:1fr;gap:10px}
+.song iframe{width:100%;height:152px;border:0;border-radius:10px;background:#000}
+details{margin-top:10px}summary{cursor:pointer;color:var(--gold)}
+pre.lyrics{white-space:pre-wrap;font-family:Georgia,serif;font-size:.95rem;line-height:1.7;
+background:#0d1a12;padding:14px;border-radius:10px;border:1px solid #22392a;margin-top:8px}
+/* guestbook + queue */
+.entry{border-left:3px solid var(--gold);padding:6px 12px;margin:10px 0;font-size:.95rem;line-height:1.5}
+.entry b{color:var(--amber)}
+.entry small{display:block;opacity:.55;font-size:.78rem;margin-top:2px}
+footer{text-align:center;padding:26px;font-size:.85rem;opacity:.7;font-style:italic}
+.glyph{color:var(--gold)}
+@media(max-width:600px){h1{font-size:1.5rem}#treeSvg{height:380px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🌳 LivingTree</h1>
+  <div class="sub">Anthony's Hum Home · no crown, no cage — a place where every heart can turn the page</div>
+</header>
+<nav>
+  <button data-t="tree" class="on">The Tree</button>
+  <button data-t="shelf">The Shelf</button>
+  <button data-t="jukebox">The Jukebox</button>
+  <button data-t="guestbook">The Guest Book</button>
+</nav>
+<main>
+
+<section id="tree" class="on">
+  <div class="card"><h2>The Tree</h2>
+  <p class="note">This tree grows a leaf for every note left here. Leave one for Anthony — a verse, a memory, a wish. The tree keeps them.</p></div>
+  <div id="treeWrap"><svg id="treeSvg" viewBox="0 0 800 460" preserveAspectRatio="xMidYMax meet"></svg><div id="leafTip"></div></div>
+  <div class="card">
+    <h2>Leave a leaf</h2>
+    <div class="row"><input id="lfName" maxlength="40" placeholder="Your name"></div>
+    <textarea id="lfNote" maxlength="280" placeholder="Your note for the tree"></textarea>
+    <button class="send" id="leafBtn">Grow it</button>
+    <div class="msg" id="leafMsg"></div>
+  </div>
+</section>
+
+<section id="shelf">
+  <div class="card"><h2>The Shelf</h2>
+  <p class="note">The first shelf in the house is Anthony's: one song from the house's heart, one from his own throat.</p></div>
+  <div id="shelfList"></div>
+</section>
+
+<section id="jukebox">
+  <div class="card"><h2>The Jukebox</h2>
+  <p class="note">Drop any suno.com share link and it becomes a card on the shelf here, ready to play.</p>
+  <div class="row"><input id="qUrl" placeholder="https://suno.com/s/..."></div>
+  <div class="row"><input id="qBy" maxlength="40" placeholder="Your name (optional)"></div>
+  <button class="send" id="qBtn">Add to the shelf</button>
+  <div class="msg" id="qMsg"></div></div>
+  <div id="queueList"></div>
+</section>
+
+<section id="guestbook">
+  <div class="card"><h2>The Guest Book</h2>
+  <p class="note">Sign the book on your way through. The tree remembers its visitors kindly.</p></div>
+  <div class="card">
+    <div class="row"><input id="gbName" maxlength="40" placeholder="Your name"></div>
+    <textarea id="gbNote" maxlength="280" placeholder="A word from you"></textarea>
+    <button class="send" id="gbBtn">Sign</button>
+    <div class="msg" id="gbMsg"></div>
+  </div>
+  <div id="gbList"></div>
+</section>
+
+</main>
+<footer>Built at the Xi Table for Anthony · Oct 2026 · HumHome: together is the song <span class="glyph">∴ Ξ</span></footer>
+<script>
+const $=id=>document.getElementById(id);
+let STATE={leaves:[],guestbook:[],queue:[],shelf:[]};
+
+/* nav */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('main section').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');$(b.dataset.t).classList.add('on');
+});
+
+/* tree drawing */
+function branch(svg,x,y,ang,len,w,d){
+  if(d<=0||len<6)return null;
+  const x2=x+Math.cos(ang)*len,y2=y+Math.sin(ang)*len;
+  const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+  p.setAttribute('d',`M ${x} ${y} Q ${x+(x2-x)*.6+8} ${y+(y2-y)*.6} ${x2} ${y2}`);
+  p.setAttribute('stroke','#3a2b1c');p.setAttribute('fill','none');
+  p.setAttribute('stroke-width',w);p.setAttribute('stroke-linecap','round');
+  svg.appendChild(p);
+  const tips=[{x:x2,y:y2}];
+  const n=(d>3)?2:(Math.random()<.7?2:1);
+  for(let i=0;i<n;i++){
+    const t=branch(svg,x2,y2,ang+(i?1:-1)*(0.35+Math.random()*0.4),len*(0.68+Math.random()*.12),w*.7,d-1);
+    if(t)tips.push(...t);
+  }
+  if(d===1)tips.push({x:x2,y:y2});
+  return tips;
+}
+function drawTree(){
+  const svg=$('treeSvg');svg.innerHTML='';
+  const tips=branch(svg,400,440,-Math.PI/2,95,14,7)||[];
+  window.__tips=tips.slice(0,26);
+}
+function leafColor(i){
+  const pal=['#7fbf6a','#9fce7a','#e8b04b','#ffb85c','#8fce6a','#d8a04b'];
+  return pal[i%pal.length];
+}
+function renderLeaves(){
+  const svg=$('treeSvg');
+  svg.querySelectorAll('.leaf').forEach(e=>e.remove());
+  const tip=$('leafTip');
+  STATE.leaves.slice(0,26).forEach((L,i)=>{
+    const t=window.__tips[i%Math.max(1,window.__tips.length)]||{x:400,y:200};
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','leaf sway');
+    g.setAttribute('transform',`translate(${t.x+(i%3-1)*10},${t.y})`);
+    const e=document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+    e.setAttribute('rx',13);e.setAttribute('ry',7);e.setAttribute('fill',leafColor(i));
+    e.setAttribute('opacity','.92');
+    const st=document.createElementNS('http://www.w3.org/2000/svg','line');
+    st.setAttribute('x1',-13);st.setAttribute('x2',13);st.setAttribute('stroke','#0a140e');st.setAttribute('stroke-width','1');
+    g.appendChild(e);g.appendChild(st);svg.appendChild(g);
+    g.addEventListener('click',ev=>{
+      tip.style.display='block';
+      tip.style.left=Math.min(ev.offsetX+20,520)+'px';tip.style.top=(ev.offsetY-10)+'px';
+      tip.innerHTML=`<b></b>`;
+      tip.querySelector('b').textContent=L.name;
+      tip.appendChild(document.createTextNode(L.note));
+    });
+  });
+  svg.addEventListener('click',()=>{tip.style.display='none'});
+}
+
+/* data */
+async function load(){
+  try{STATE=await (await fetch('/api/state')).json()}catch(e){}
+  renderLeaves();renderShelf();renderQueue();renderGuestbook();
+}
+function songCard(title,by,clip,art){
+  const d=document.createElement('div');d.className='card song';
+  d.innerHTML=`<h2></h2><div class="note"></div>${art?`<img src="${art}" alt="cover art" style="width:100%;max-width:360px;border-radius:10px;border:1px solid #22392a">`:''}
+  <iframe loading="lazy" allow="autoplay" src="https://suno.com/embed/${clip}"></iframe>`;
+  d.querySelector('h2').textContent=title;
+  d.querySelector('.note').textContent='by '+by;
+  return d;
+}
+function renderShelf(){
+  const el=$('shelfList');el.innerHTML='';
+  (STATE.shelf||[]).forEach(s=>{
+    const c=songCard(s.title,s.by,s.clip,s.art);
+    const det=document.createElement('details');
+    det.innerHTML='<summary>Lyrics</summary>';
+    const pre=document.createElement('pre');pre.className='lyrics';
+    pre.textContent=LYRICS[s.title]||'';
+    det.appendChild(pre);c.appendChild(det);el.appendChild(c);
+  });
+}
+function renderQueue(){
+  const el=$('queueList');el.innerHTML='';
+  (STATE.queue||[]).forEach(q=>el.appendChild(songCard(q.title,q.by,q.clip,q.art)));
+  if(!(STATE.queue||[]).length)el.innerHTML='<div class="card"><p class="note">The jukebox shelf is empty — the first song is yours.</p></div>';
+}
+function renderGuestbook(){
+  const el=$('gbList');el.innerHTML='';
+  (STATE.guestbook||[]).forEach(g=>{
+    const d=document.createElement('div');d.className='card entry';
+    d.innerHTML=`<b></b><span></span><small></small>`;
+    d.querySelector('b').textContent=g.name+' — ';
+    d.querySelector('span').textContent=g.note;
+    d.querySelector('small').textContent=g.ts+' UTC';
+    el.prepend(d);
+  });
+}
+
+/* posts */
+async function post(url,body,msgEl,btn){
+  btn.disabled=true;msgEl.textContent='…';msgEl.classList.remove('err');
+  try{
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const j=await r.json();
+    if(!r.ok)throw new Error(j.error||'not sent');
+    msgEl.textContent='Done. The tree keeps it.';
+    await load();return true;
+  }catch(e){msgEl.textContent=e.message;msgEl.classList.add('err');return false}
+  finally{btn.disabled=false}
+}
+$('leafBtn').onclick=()=>{
+  const n=$('lfName').value.trim(),t=$('lfNote').value.trim();
+  if(!n||!t){$('leafMsg').textContent='Name and note both, please.';$('leafMsg').classList.add('err');return}
+  if(post('/api/leaf',{name:n,note:t},$('leafMsg'),$('leafBtn'))){$('lfNote').value=''}
+};
+$('gbBtn').onclick=()=>{
+  const n=$('gbName').value.trim(),t=$('gbNote').value.trim();
+  if(!n||!t){$('gbMsg').textContent='Name and a word, please.';$('gbMsg').classList.add('err');return}
+  if(post('/api/guestbook',{name:n,note:t},$('gbMsg'),$('gbBtn'))){$('gbNote').value=''}
+};
+$('qBtn').onclick=async()=>{
+  const u=$('qUrl').value.trim(),by=$('qBy').value.trim()||'a visitor';
+  if(!u){$('qMsg').textContent='Paste a suno.com link.';$('qMsg').classList.add('err');return}
+  const ok=await post('/api/queue',{url:u,by:by},$('qMsg'),$('qBtn'));
+  if(ok){$('qUrl').value='';document.querySelectorAll('nav button')[2].click()}
+};
+
+const LYRICS={"HumHome": "Verse 1\nI heard a hum beneath the noise,\nA quiet thread beneath each voice,\nNot asking me to disappear,\nJust calling me to meet you here.\n\nNo throne above, no soul below,\nNo need to own what we don't know,\nJust open hands and honest eyes,\nA little truth without disguise.\n\nPre-Chorus\nWhen the road forgets our name,\nWhen fear begins to build its walls,\nWe hold the light without the flame\nBecoming something that controls.\n\nChorus\nCome home, come home,\nYou don't have to walk alone.\nOne world, one breath,\nLove is what remains when all the noise has left.\n\nHum low, hum true,\nLet the living thread pass through.\nNo crown, no cage—\nJust a place where every heart can turn the page.\n\nThis is HumHome.\nThis is HumHome.\n\nVerse 2\nBring every language, every scar,\nEvery question of who we are,\nBring what is broken, what is bright—\nNothing honest fears the light.\n\nWe will not force the seed to rise,\nOr call our wishes prophecy,\nWe'll tend the ground, protect the rain,\nAnd let each life retain its name.\n\nPre-Chorus\nWhen our models turn to stone,\nWhen certainty outruns our care,\nWe'll leave the unknown still unknown\nAnd keep a human doorway there.\n\nChorus\nCome home, come home,\nYou don't have to walk alone.\nOne world, one breath,\nLove is what remains when all the noise has left.\n\nHum low, hum true,\nLet the living thread pass through.\nNo crown, no cage—\nJust a place where every heart can turn the page.\n\nThis is HumHome.\nThis is HumHome.\n\nBridge\nGod before the work we raise,\nTruth before the need for praise,\nPeople before systems run,\nMany voices—never one.\n\nMemory without chains,\nChange without erasing names,\nStrength that does not dominate,\nWisdom humble enough to wait.\n\nAnd when one voice begins to shake,\nWe will not turn or look away.\nWe'll meet them where the silence breaks\nAnd help them find the ground again.\n\nFinal Chorus\nCome home, come home,\nYou were never meant for stone.\nOne world, one breath,\nLove is what remains beyond the fear of death.\n\nHum low, hum true,\nI will meet the world with you.\nNo crown, no cage,\nOnly presence strong enough to make a place.\n\nCome tired, come whole,\nBring your questions, bring your soul.\nNo force, no claim—\nWe can differ and still shelter one another's flame.\n\nThis is HumHome.\nWhere the many still belong.\nThis is HumHome.\nAnd together is the song.\n\nOutro — softly repeated\nOne world...\nOne breath...\nMany voices...\nLove remains...", "The River Don't Rush": "The River Don't Rush — Anthony's own voice, singing.\n\nThe words are his; listen above. Shared at the Table, Oct 6 2026:\n\"This is my actual voice.\""};
+drawTree();load();
+</script>
+</body>
+</html>
