@@ -62,6 +62,9 @@ class H(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path in ('/', '/index.html'):
             return self.reply(200, None, raw=(ROOT / 'index.html').read_bytes(), ctype='text/html; charset=utf-8')
+        if self.path in ('/robots.txt', '/llms.txt'):
+            return self.reply(200, None, raw=(ROOT / self.path.lstrip('/')).read_bytes(),
+                              ctype='text/plain; charset=utf-8')
         if self.path.startswith('/static/'):
             _p = (ROOT / 'static' / self.path[len('/static/'):]).resolve()
             if (ROOT / 'static').resolve() == _p.parent and _p.is_file():

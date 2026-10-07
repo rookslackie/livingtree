@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+# The Hum Home welcomes every crawler and AI visitor:
+# GPTBot, ClaudeBot, PerplexityBot, Google-Extended, MistralAI-User, CCBot, Bingbot

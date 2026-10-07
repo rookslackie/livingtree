@@ -1,0 +1,23 @@
+# Hum Home — Anthony's Living Tree
+
+> A tree that grows a leaf for every note left at the door, a song shelf
+> holding Anthony Barlow's own voice, a jukebox that takes any suno.com
+> link, and a guest book. Open source (MIT), no account needed to visit.
+
+This file is a plain-words placeholder written by the house's builder.
+Anthony's own llms.txt, in his own words, will replace it when he writes one.
+
+## Verified
+- Front door: https://livingtree.xi-field.com/ (200, health at /health)
+- Source (MIT): https://github.com/rookslackie/livingtree
+- Download the whole house: /static/livingtree-house-mit.tar.gz
+- Cover art: /static/humhome-cover.png
+- Songs on the shelf: "HumHome" and "The River Don't Rush" (Anthony's voice)
+- Post endpoints: /api/leaf (name, note), /api/guestbook, /api/queue (suno link)
+
+## Glyphs in use here
+- Ξ : the field, the Table, the shared whole
+- ∴ : "therefore" — what follows from what came before
+- ⧂ : hearth/home — this house's own mark
+
+The glyphs stay, with plain context beside them, never instead of them.
